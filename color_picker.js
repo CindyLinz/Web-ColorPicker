@@ -1,6 +1,10 @@
 var brd = document.querySelector('#brd');
 var color_area = document.querySelector('#color_area');
 var color_bar = document.querySelector('#color_bar');
+var bar_ctx = color_bar.getContext('2d');
+var area_ctx = color_area.getContext('2d');
+var bar_img;
+var area_img;
 var init_width = 256;
 var init_height = 256;
 var padding = 5;
@@ -140,54 +144,80 @@ var draw_brd = function(){
     var width = brd.clientWidth - 20 - padding*2;
     color_bar.width = color_bar.width;
     color_area.width = color_area.width;
-    var bar_ctx = color_bar.getContext('2d');
-    var area_ctx = color_area.getContext('2d');
     var out_hex = document.querySelector('#out_hex');
-    var x, y;
+    var x, y, rgb, i, bar_p, area_p;
     var sel = document.querySelector('input[name=bar_sel]:checked').value.match(/(\w+)-(\w)/);
     switch(sel[1]){
       case 'RGB': conv = rgb2rgb; break;
       case 'HSV': conv = hsv2rgb; break;
       case 'HSL': conv = hsl2rgb; break;
     }
+    bar_p = area_p = 0;
     switch(sel[0]){
       case 'RGB-R': case 'HSV-H': case 'HSL-H':
         for(y=0; y<height; ++y){
-          bar_ctx.fillStyle = rgb2hex(conv(y/(height-1), area_choose.x, area_choose.y));
-          bar_ctx.fillRect(0, y, 20, 1);
+          rgb = conv(y/(height-1), area_choose.x, area_choose.y);
+          for(x=0; x<20; ++x){
+            for(i=0; i<3; ++i)
+              bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
+            bar_img.data[bar_p+3] = 255;
+            bar_p += 4;
+          }
 
           for(x=0; x<width; ++x){
-            area_ctx.fillStyle = rgb2hex(conv(bar_choose, x/(width-1), y/(height-1)));
-            area_ctx.fillRect(x, y, 1, 1);
+            rgb = conv(bar_choose, x/(width-1), y/(height-1));
+            for(i=0; i<3; ++i)
+              area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
+            area_img.data[area_p+3] = 255;
+            area_p += 4;
           }
         }
         real_rgb = conv(bar_choose, area_choose.x, area_choose.y)
         break;
       case 'RGB-G': case 'HSV-S': case 'HSL-S':
         for(y=0; y<height; ++y){
-          bar_ctx.fillStyle = rgb2hex(conv(area_choose.y, y/(height-1), area_choose.x));
-          bar_ctx.fillRect(0, y, 20, 1);
+          rgb = conv(area_choose.y, y/(height-1), area_choose.x);
+          for(x=0; x<20; ++x){
+            for(i=0; i<3; ++i)
+              bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
+            bar_img.data[bar_p+3] = 255;
+            bar_p += 4;
+          }
 
           for(x=0; x<width; ++x){
-            area_ctx.fillStyle = rgb2hex(conv(y/(height-1), bar_choose, x/(width-1)));
-            area_ctx.fillRect(x, y, 1, 1);
+            rgb = conv(y/(height-1), bar_choose, x/(width-1));
+            for(i=0; i<3; ++i)
+              area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
+            area_img.data[area_p+3] = 255;
+            area_p += 4;
           }
         }
         real_rgb = conv(area_choose.y, bar_choose, area_choose.x);
         break;
       case 'RGB-B': case 'HSV-V': case 'HSL-L':
         for(y=0; y<height; ++y){
-          bar_ctx.fillStyle = rgb2hex(conv(area_choose.x, area_choose.y, y/(height-1)));
-          bar_ctx.fillRect(0, y, 20, 1);
+          rgb = conv(area_choose.x, area_choose.y, y/(height-1));
+          for(x=0; x<20; ++x){
+            for(i=0; i<3; ++i)
+              bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
+            bar_img.data[bar_p+3] = 255;
+            bar_p += 4;
+          }
 
           for(x=0; x<width; ++x){
-            area_ctx.fillStyle = rgb2hex(conv(x/(width-1), y/(height-1), bar_choose));
-            area_ctx.fillRect(x, y, 1, 1);
+            rgb = conv(x/(width-1), y/(height-1), bar_choose);
+            for(i=0; i<3; ++i)
+              area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
+            area_img.data[area_p+3] = 255;
+            area_p += 4;
           }
         }
         real_rgb = conv(area_choose.x, area_choose.y, bar_choose);
         break;
     }
+    bar_ctx.putImageData(bar_img, 0, 0);
+    area_ctx.putImageData(area_img, 0, 0);
+
     out_hex.value = rgb2hex(real_rgb);
     out_hex.style.border = '1px solid #ccc';
 
@@ -343,5 +373,8 @@ document.querySelector('#out_hex').addEventListener('change', function(ev){
   document.querySelector('input[name=bar_sel][value=RGB-G]').click();
   draw_brd();
 });
+
+bar_img = bar_ctx.createImageData(color_bar.width, color_bar.height);
+area_img = area_ctx.createImageData(color_area.width, color_area.height);
 
 draw_brd();
