@@ -5,8 +5,8 @@ var bar_ctx = color_bar.getContext('2d');
 var area_ctx = color_area.getContext('2d');
 var bar_img;
 var area_img;
-var init_width = 256;
-var init_height = 256;
+var init_width = 768;
+var init_height = 768;
 var padding = 5;
 color_bar.width = 20;
 color_bar.height = init_height;
@@ -373,6 +373,22 @@ document.querySelector('#out_hex').addEventListener('change', function(ev){
   document.querySelector('input[name=bar_sel][value=RGB-G]').click();
   draw_brd();
 });
+
+document.querySelector('#dimension').value = init_width;
+document.querySelector('#dimension').oninput = function(ev){
+  var dim = ev.target.value | 0;
+  color_bar.width = 20;
+  color_bar.height = dim;
+  color_area.width = dim;
+  color_area.height = dim;
+  brd.style.width = dim + 20 + 'px';
+  brd.style.height = dim + 'px';
+  brd.style.padding = padding + 'px';
+
+  bar_img = bar_ctx.createImageData(color_bar.width, color_bar.height);
+  area_img = area_ctx.createImageData(color_area.width, color_area.height);
+  draw_brd();
+};
 
 bar_img = bar_ctx.createImageData(color_bar.width, color_bar.height);
 area_img = area_ctx.createImageData(color_area.width, color_area.height);
