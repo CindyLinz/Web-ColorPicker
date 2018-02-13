@@ -8,6 +8,7 @@ var area_img;
 var init_width = 768;
 var init_height = 768;
 var padding = 5;
+var wasm = {};
 color_bar.width = 20;
 color_bar.height = init_height;
 color_area.width = init_width;
@@ -146,70 +147,92 @@ var draw_brd = function(){
     color_area.width = color_area.width;
     var out_hex = document.querySelector('#out_hex');
     var x, y, rgb, i, bar_p, area_p;
+    var conv_index;
     var sel = document.querySelector('input[name=bar_sel]:checked').value.match(/(\w+)-(\w)/);
     switch(sel[1]){
-      case 'RGB': conv = rgb2rgb; break;
-      case 'HSV': conv = hsv2rgb; break;
-      case 'HSL': conv = hsl2rgb; break;
+      case 'RGB': conv = rgb2rgb; conv_index = 0; break;
+      case 'HSV': conv = hsv2rgb; conv_index = 1; break;
+      case 'HSL': conv = hsl2rgb; conv_index = 2; break;
     }
     bar_p = area_p = 0;
     switch(sel[0]){
       case 'RGB-R': case 'HSV-H': case 'HSL-H':
-        for(y=0; y<height; ++y){
-          rgb = conv(y/(height-1), area_choose.x, area_choose.y);
-          for(x=0; x<20; ++x){
-            for(i=0; i<3; ++i)
-              bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
-            bar_img.data[bar_p+3] = 255;
-            bar_p += 4;
-          }
+        if( wasm.use && wasm.draw1 ){
+          wasm.draw1(conv_index, area_choose.x, area_choose.y, bar_choose, width, height);
+          area_img.data.set(new Uint8ClampedArray(wasm.mem.buffer, 12, width*height*4));
+          bar_img.data.set(new Uint8ClampedArray(wasm.mem.buffer, 12+width*height*4, 20*height*4));
+        }
+        else{
+          for(y=0; y<height; ++y){
+            rgb = conv(y/(height-1), area_choose.x, area_choose.y);
+            for(x=0; x<20; ++x){
+              for(i=0; i<3; ++i)
+                bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
+              bar_img.data[bar_p+3] = 255;
+              bar_p += 4;
+            }
 
-          for(x=0; x<width; ++x){
-            rgb = conv(bar_choose, x/(width-1), y/(height-1));
-            for(i=0; i<3; ++i)
-              area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
-            area_img.data[area_p+3] = 255;
-            area_p += 4;
+            for(x=0; x<width; ++x){
+              rgb = conv(bar_choose, x/(width-1), y/(height-1));
+              for(i=0; i<3; ++i)
+                area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
+              area_img.data[area_p+3] = 255;
+              area_p += 4;
+            }
           }
         }
         real_rgb = conv(bar_choose, area_choose.x, area_choose.y)
         break;
       case 'RGB-G': case 'HSV-S': case 'HSL-S':
-        for(y=0; y<height; ++y){
-          rgb = conv(area_choose.y, y/(height-1), area_choose.x);
-          for(x=0; x<20; ++x){
-            for(i=0; i<3; ++i)
-              bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
-            bar_img.data[bar_p+3] = 255;
-            bar_p += 4;
-          }
+        if( wasm.use && wasm.draw2 ){
+          wasm.draw2(conv_index, area_choose.x, area_choose.y, bar_choose, width, height);
+          area_img.data.set(new Uint8ClampedArray(wasm.mem.buffer, 12, width*height*4));
+          bar_img.data.set(new Uint8ClampedArray(wasm.mem.buffer, 12+width*height*4, 20*height*4));
+        }
+        else{
+          for(y=0; y<height; ++y){
+            rgb = conv(area_choose.y, y/(height-1), area_choose.x);
+            for(x=0; x<20; ++x){
+              for(i=0; i<3; ++i)
+                bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
+              bar_img.data[bar_p+3] = 255;
+              bar_p += 4;
+            }
 
-          for(x=0; x<width; ++x){
-            rgb = conv(y/(height-1), bar_choose, x/(width-1));
-            for(i=0; i<3; ++i)
-              area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
-            area_img.data[area_p+3] = 255;
-            area_p += 4;
+            for(x=0; x<width; ++x){
+              rgb = conv(y/(height-1), bar_choose, x/(width-1));
+              for(i=0; i<3; ++i)
+                area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
+              area_img.data[area_p+3] = 255;
+              area_p += 4;
+            }
           }
         }
         real_rgb = conv(area_choose.y, bar_choose, area_choose.x);
         break;
       case 'RGB-B': case 'HSV-V': case 'HSL-L':
-        for(y=0; y<height; ++y){
-          rgb = conv(area_choose.x, area_choose.y, y/(height-1));
-          for(x=0; x<20; ++x){
-            for(i=0; i<3; ++i)
-              bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
-            bar_img.data[bar_p+3] = 255;
-            bar_p += 4;
-          }
+        if( wasm.use && wasm.draw3 ){
+          wasm.draw3(conv_index, area_choose.x, area_choose.y, bar_choose, width, height);
+          area_img.data.set(new Uint8ClampedArray(wasm.mem.buffer, 12, width*height*4));
+          bar_img.data.set(new Uint8ClampedArray(wasm.mem.buffer, 12+width*height*4, 20*height*4));
+        }
+        else{
+          for(y=0; y<height; ++y){
+            rgb = conv(area_choose.x, area_choose.y, y/(height-1));
+            for(x=0; x<20; ++x){
+              for(i=0; i<3; ++i)
+                bar_img.data[bar_p+i] = parseInt(rgb[i] * 255 + .5);
+              bar_img.data[bar_p+3] = 255;
+              bar_p += 4;
+            }
 
-          for(x=0; x<width; ++x){
-            rgb = conv(x/(width-1), y/(height-1), bar_choose);
-            for(i=0; i<3; ++i)
-              area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
-            area_img.data[area_p+3] = 255;
-            area_p += 4;
+            for(x=0; x<width; ++x){
+              rgb = conv(x/(width-1), y/(height-1), bar_choose);
+              for(i=0; i<3; ++i)
+                area_img.data[area_p+i] = parseInt(rgb[i] * 255 + .5);
+              area_img.data[area_p+3] = 255;
+              area_p += 4;
+            }
           }
         }
         real_rgb = conv(area_choose.x, area_choose.y, bar_choose);
@@ -394,3 +417,43 @@ bar_img = bar_ctx.createImageData(color_bar.width, color_bar.height);
 area_img = area_ctx.createImageData(color_area.width, color_area.height);
 
 draw_brd();
+
+if( WebAssembly ){
+  (function(){
+    var xhr = new XMLHttpRequest;
+    xhr.onreadystatechange = function(){
+      if( this.readyState==4 ){
+        xhr.onreadystatechange = new Function('');
+        var importObj = {
+          console: {
+            warn: console.warn,
+            warn_hr: function(){
+              console.warn('---');
+            }
+          },
+        };
+        WebAssembly.instantiate(xhr.response, importObj).then(function(res){
+          console.warn(res);
+          var mod = res.instance.exports;
+          wasm.mem = mod.mem;
+          wasm.draw1 = mod.draw1;
+          wasm.draw2 = mod.draw2;
+          wasm.draw3 = mod.draw3;
+        });
+      }
+    };
+    xhr.responseType = 'arraybuffer';
+    xhr.open('GET', 'core.wasm');
+    xhr.send();
+  })();
+  wasm.use = document.querySelector('#use_wasm').checked;
+  document.querySelector('#use_wasm').onchange = function(ev){
+    wasm.use = ev.target.checked;
+  };
+}
+else{
+  document.querySelector('#use_wasm').checked = false;
+  document.querySelector('#use_wasm').disabled = true;
+  document.querySelector('#use_wasm').parentNode.style.color = '#ccc';
+  wasm.use = false;
+}
