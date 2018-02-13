@@ -265,8 +265,8 @@ color_area.addEventListener('mousedown', function(ev){
   ev.preventDefault();
   ev.stopPropagation();
   var upd = function(ev){
-    var x = ev.clientX - color_area.offsetLeft;
-    var y = ev.clientY - color_area.offsetTop;
+    var x = ev.clientX - color_area.offsetLeft + window.scrollX;
+    var y = ev.clientY - color_area.offsetTop + window.scrollY;
     if( x < 0 ) x = 0;
     if( x >= color_area.width ) x = color_area.width-1;
     if( y < 0 ) y = 0;
@@ -297,7 +297,7 @@ color_bar.addEventListener('mousedown', function(ev){
   ev.preventDefault();
   ev.stopPropagation();
   var upd = function(ev){
-    var y = ev.clientY - color_bar.offsetTop;
+    var y = ev.clientY - color_bar.offsetTop + window.scrollY;
     if( y < 0 ) y = 0;
     if( y >= color_bar.height ) y = color_bar.height-1;
     bar_choose = y / (color_bar.height-1);
