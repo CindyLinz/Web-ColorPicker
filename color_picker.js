@@ -102,6 +102,8 @@ var real2hsv = function(rgb){
   else
     hh = (rgb[0]-rgb[1]) / c + 4;
   h = hh / 6;
+  if( h < 0 )
+    h += 1;
   var v = M;
   var s;
   if( v == 0 )
@@ -130,6 +132,8 @@ var real2hsl = function(rgb){
   else
     hh = (rgb[0]-rgb[1]) / c + 4;
   h = hh / 6;
+  if( h < 0 )
+    h += 1;
   var l = (M + m) / 2;
   var s;
   if( l == 1 || l == 0 )
@@ -433,7 +437,6 @@ if( WebAssembly ){
           },
         };
         WebAssembly.instantiate(xhr.response, importObj).then(function(res){
-          console.warn(res);
           var mod = res.instance.exports;
           wasm.mem = mod.mem;
           wasm.draw1 = mod.draw1;
