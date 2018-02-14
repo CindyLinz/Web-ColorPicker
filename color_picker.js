@@ -428,15 +428,7 @@ if( WebAssembly ){
     xhr.onreadystatechange = function(){
       if( this.readyState==4 ){
         xhr.onreadystatechange = new Function('');
-        var importObj = {
-          console: {
-            warn: console.warn,
-            warn_hr: function(){
-              console.warn('---');
-            }
-          },
-        };
-        WebAssembly.instantiate(xhr.response, importObj).then(function(res){
+        WebAssembly.instantiate(xhr.response, {}).then(function(res){
           var mod = res.instance.exports;
           wasm.mem = mod.mem;
           wasm.draw1 = mod.draw1;

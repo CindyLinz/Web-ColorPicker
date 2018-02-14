@@ -1,6 +1,4 @@
 ( module
-  ( import "console" "warn" (func $warn (param f32)) )
-  ( import "console" "warn_hr" (func $warn_hr) )
   ( export "mem" (memory 0) )
 
   ( memory 0 65535 )
@@ -8,7 +6,7 @@
   ( elem (i32.const 0) $rgb2rgb $hsv2rgb $hsl2rgb )
 
   ( type $type_conv (func (param f32) (param f32) (param f32)) )
-  ( func $rgb2rgb (export "rgb2rgb")
+  ( func $rgb2rgb
     ( param $r f32 ) ( param $g f32 ) ( param $b f32 )
     i32.const 0
     get_local $r
@@ -22,7 +20,7 @@
     get_local $b
     f32.store
   )
-  ( func $hsv2rgb (export "hsv2hsv")
+  ( func $hsv2rgb
     ( param $h f32 ) ( param $s f32 ) ( param $v f32 )
     ( local $c f32 ) ( local $m f32 ) ( local $hh f32 ) ( local $x f32 )
 
@@ -160,7 +158,7 @@
       end
     end
   )
-  ( func $hsl2rgb (export "hsl2rgb")
+  ( func $hsl2rgb
     ( param $h f32 ) ( param $s f32 ) ( param $l f32 )
     ( local $c f32 ) ( local $m f32 ) ( local $hh f32 ) ( local $x f32 )
 
