@@ -270,6 +270,7 @@ var draw_brd = function(){
     area_ctx.fillRect(x, y+3, 1, 7);
 
     document.querySelector('#out_color').style.backgroundColor = out_hex.value;
+    history.replaceState(null, '', '#color=' + out_hex.value.replace(/#/, ''));
 
     var rgb = real_rgb;
     document.querySelector('#RGB-R').value = rgb[0] * 100;
@@ -376,8 +377,8 @@ document.querySelector('#bar_sel').addEventListener('change', function(ev){
   draw_brd();
 });
 
-document.querySelector('#out_hex').addEventListener('change', function(ev){
-  var out_hex = ev.target;
+var out_hex_onchange = function(){
+  var out_hex = document.querySelector('#out_hex');
   var match, i;
   if( match = out_hex.value.match(/^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/) ){
   }
@@ -399,7 +400,8 @@ document.querySelector('#out_hex').addEventListener('change', function(ev){
   document.querySelector('#RGB-B').value = match[3] * 100;
   document.querySelector('input[name=bar_sel][value=RGB-G]').click();
   draw_brd();
-});
+};
+document.querySelector('#out_hex').addEventListener('change', out_hex_onchange);
 
 document.querySelector('#dimension').value = init_width;
 document.querySelector('#dimension').oninput = function(ev){
@@ -452,3 +454,12 @@ else{
   document.querySelector('#use_wasm').parentNode.style.color = '#ccc';
   wasm.use = false;
 }
+
+(function(){
+  var match;
+  if( match = location.hash.match(/color=([0-9A-Za-z]{6})/) )
+    document.querySelector('#out_hex').value = '#' + match[1];
+  else if( match = location.hash.match(/color=([0-9A-Za-z]{3})/) )
+    document.querySelector('#out_hex').value = '#' + match[1];
+  out_hex_onchange();
+})();
